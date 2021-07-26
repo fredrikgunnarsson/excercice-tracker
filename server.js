@@ -5,7 +5,6 @@ require("dotenv").config();
 
 app.use(cors());
 app.use(express.static("public"));
-// app.use(express.json());
 app.use(express.urlencoded());
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
@@ -29,11 +28,9 @@ app.post("/api/users/:_id/exercises", (req, res) => {
   if (!isUserId(req.params._id)) return res.send("no such user ID");
   let user = Users.users.find((el) => el._id === req.params._id);
   delete req.body[":_id"];
-  console.log("datum!: ", req.body.date);
-  if (!req.body.date) req.body.date = new Date(Date.now());
+  if (!req.body.date)
+    req.body.date = new Date(Date.now()).toISOString().slice(0, 10);
   user.log.push(req.body);
-  console.log(req.params);
-  console.log(req.body);
   res.send(user);
 });
 
@@ -41,9 +38,22 @@ app.get("/api/users/:_id/logs", (req, res) => {
   if (!isUserId(req.params._id)) return res.send("no such user ID");
   let user = Users.users.find((el) => el._id === req.params._id);
   user.count = user.log.length;
-  // console.log(user);
-  // console.log(Users);
-  res.send(user);
+  let resUser = JSON.parse(JSON.stringify(user));
+  const { limit, from, to } = req.query;
+  if (limit) {
+    resUser.log = resUser.log.filter((el, idx) => idx < limit);
+  }
+  if (from) {
+    // console.log(resUser.log[0].date, Date(resUser.log[0].date));
+    resUser.log = resUser.log.filter(
+      (el) => new Date(el.date) >= new Date(from)
+    );
+  }
+  if (to) {
+    resUser.log = resUser.log.filter((el) => new Date(el.date) <= new Date(to));
+  }
+
+  res.send(resUser);
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
@@ -58,7 +68,6 @@ function isUser(user) {
   return Users.users.find((el) => el.username === user);
 }
 function isUserId(userId) {
-  console.log(Users.users.find((el) => el._id === userId));
   return Users.users.find((el) => el._id === userId);
 }
 
