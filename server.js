@@ -27,7 +27,7 @@ app.post("/api/users/", (req, res) => {
 });
 app.post("/api/users/:_id/exercises", (req, res) => {
   if (!isUserId(req.params._id)) return res.send("no such user ID");
-  let user = Users.users.find((el) => el._id);
+  let user = Users.users.find((el) => el._id === req.params._id);
   delete req.body[":_id"];
   user.log.push(req.body);
   console.log(req.params);
