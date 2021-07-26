@@ -27,11 +27,18 @@ app.post("/api/users/", (req, res) => {
 app.post("/api/users/:_id/exercises", (req, res) => {
   if (!isUserId(req.params._id)) return res.send("no such user ID");
   let user = Users.users.find((el) => el._id === req.params._id);
+  req.body.duration = Number(req.body.duration);
   delete req.body[":_id"];
   if (!req.body.date)
     req.body.date = new Date(Date.now()).toISOString().slice(0, 10);
   user.log.push(req.body);
-  res.send(user);
+  res.send({
+    username: user.username,
+    _id: user._id,
+    duration: req.body.duration,
+    description: req.body.description,
+    date: new Date(req.body.date).toDateString(),
+  });
 });
 
 app.get("/api/users/:_id/logs", (req, res) => {
