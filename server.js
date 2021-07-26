@@ -29,6 +29,8 @@ app.post("/api/users/:_id/exercises", (req, res) => {
   if (!isUserId(req.params._id)) return res.send("no such user ID");
   let user = Users.users.find((el) => el._id === req.params._id);
   delete req.body[":_id"];
+  console.log("datum!: ", req.body.date);
+  if (!req.body.date) req.body.date = new Date(Date.now());
   user.log.push(req.body);
   console.log(req.params);
   console.log(req.body);
